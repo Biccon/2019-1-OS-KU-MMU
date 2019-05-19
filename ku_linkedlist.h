@@ -118,12 +118,14 @@ void print_bit(unsigned char a)
 
 void ku_h_print_list(ku_h_linkedlist *list)
 {
+    printf("process list\n");
     ku_h_node *temp = list->header->next;
     while (temp != list->tailer)
     {
         printf("%d\n", temp->pcb->pid);
         temp = temp->next;
     }
+    printf("--------------\n");
 }
 
 void ku_h_init_list(ku_h_linkedlist *list)
