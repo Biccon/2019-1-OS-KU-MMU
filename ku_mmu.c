@@ -25,16 +25,18 @@ int main(int argc, char **argv)
 
     ku_h_print_list(ku_h_processes);
 
-    ku_page_fault(1, 100);
+    printf("fault %d\n", ku_page_fault(1, 100));
     print_page();
-    ku_page_fault(1, 96);
+    printf("fault %d\n", ku_page_fault(1, 96));
     print_page();
-    ku_page_fault(1, 16);
+    printf("fault %d\n", ku_page_fault(1, 16));
     print_page();
-    ku_page_fault(1, 20);
+    printf("fault %d\n", ku_page_fault(1, 20));
     print_page();
     printf("run success? %d\n", ku_run_proc(2, &ku_cr3));
     print_page(); // pm 생성 한개
+    printf("fault %d\n", ku_page_fault(2, 100));
+    print_page();
 
     int testcase[] = {-1, 0, 0, -1, -1, 0, 0, 0, -1, -1, -1, -1, 1, 1, 1};
     

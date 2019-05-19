@@ -210,7 +210,7 @@ int ku_page_fault(char pid, char va)
     int pfn_of_page = -1;
     if(pt -> data == 0){ // 여기선 스왑가능함 조심합시다. 마찬가지로 아에 0일때는 할당이 안되어있는 pte입니다.
         pfn_of_page = get_page(0); // 페이지 할당해줍니다. 여기서는 스왑가능하므로 매개변수 -1이 아닌 아무거나 ㅇㅇ..
-        if(pfn_of_page == 0){
+        if(pfn_of_page == -1){
             return -1; // 페이지 할당해줄 거 없으면 마찬가지로 오류
         } else {
             set_ku_pte_pfn(pt, pfn_of_page);
@@ -220,7 +220,7 @@ int ku_page_fault(char pid, char va)
         if(present_of_page == 0) {
             //스왑됨. 스왑된 페이지에서 다시 가져와야함. get_page해서 가져오도록 하고 마찬가지로 페이지 없으면  return -1하고 끄태면 될듯??
             pfn_of_page = get_page(0); // 페이지 얻어와본다.
-            if(pfn_of_page == 0){
+            if(pfn_of_page == -1){
                 return -1;
             } else {
                 ku_h_swapspace[get_ku_pte_swap_offset(pt)] = 0; // 스왑스페이스에서 가져왔다고 표시해줌
