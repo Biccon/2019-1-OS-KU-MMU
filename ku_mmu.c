@@ -31,7 +31,7 @@ unsigned int ku_h_swap_count;
 unsigned int ku_h_page_index = 1; // 페이지 리스트에 할당된 순서 1부터 유의미하므로 1
 unsigned int ku_h_swap_index = 1; // offset이 1부터 가능하므로 1
 
-void set_ku_pte(struct ku_pte pte, char a : 7, char b : 1)
+void set_ku_pte(struct ku_pte pte, char a, char b )
 {
     pte.data = a << 1 | b;
 }
