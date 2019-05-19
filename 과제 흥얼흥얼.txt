@@ -16,4 +16,5 @@ init하는 memory size 32byte이고, swapsize 64바이트, 페이지 1개에 4�
 즉, pfn은 0~7까지 있을 것이다.
 sfn(swap frame number)은 0~15인데, 실제로 offset이 1부터 가능하므로 1~15?? 또는 1~16(-1씩해서) 해줄 수 있을듯
 
-swap공간에는 pid, 
+swap공간에는 pid, 그리고 swap된 page의 내용이 들어가야 하는데 이걸 어케 표현하지??
+어차피 page에는 실제로 내용이 없으니까... 이것도 pte 4개가 묶여있다고 생각하면?
