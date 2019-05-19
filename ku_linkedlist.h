@@ -39,7 +39,7 @@ int ku_h_get_size(ku_h_linkedlist *list)
     return size;
 }
 
-void ku_h_add_after(ku_h_node *node, char pid)
+ku_h_node *ku_h_add_after(ku_h_node *node, char pid)
 {
     ku_h_node *new_node = (ku_h_node *)malloc(sizeof(ku_h_node));
     new_node->pcb = ku_h_make_pcb(pid);
@@ -48,9 +48,10 @@ void ku_h_add_after(ku_h_node *node, char pid)
 
     node->next->prev = new_node;
     node->next = new_node;
+    return new_node;
 }
 
-void ku_h_add_before(ku_h_node *node, char pid)
+ku_h_node *ku_h_add_before(ku_h_node *node, char pid)
 {
     ku_h_node *new_node = (ku_h_node *)malloc(sizeof(ku_h_node));
     new_node->pcb = ku_h_make_pcb(pid);
@@ -59,16 +60,17 @@ void ku_h_add_before(ku_h_node *node, char pid)
 
     node->prev->next = new_node;
     node->prev = new_node;
+    return new_node;
 }
 
-void ku_h_add_first(ku_h_linkedlist *list, char pid)
+ku_h_node *ku_h_add_first(ku_h_linkedlist *list, char pid)
 {
-    ku_h_add_after(list->header, pid);
+    return ku_h_add_after(list->header, pid);
 }
 
-void ku_h_add_last(ku_h_linkedlist *list, char pid)
+ku_h_node *ku_h_add_last(ku_h_linkedlist *list, char pid)
 {
-    ku_h_add_before(list->tailer, pid);
+    return ku_h_add_before(list->tailer, pid);
 }
 
 ku_h_node *ku_h_get_node_by_index(ku_h_linkedlist *list, int index)

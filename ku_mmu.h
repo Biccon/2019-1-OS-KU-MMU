@@ -31,7 +31,7 @@ unsigned int ku_h_swap_count;
 unsigned int ku_h_page_index = 1; // 페이지 리스트에 할당된 순서 1부터 유의미하므로 1
 unsigned int ku_h_swap_index = 1; // offset이 1부터 가능하므로 1
 
-void set_ku_pte(struct ku_pte pte, char a, char b )
+void set_ku_pte(struct ku_pte pte, char a, char b)
 {
     pte.data = a << 1 | b;
 }
@@ -156,11 +156,23 @@ int ku_run_proc(char pid, struct ku_pte **ku_cr3)
     ku_h_node *process = ku_h_get_node_by_pid(ku_h_processes, pid);
     if (process == NULL)
     {
-        ku_h_page *page_for_pd = get_page(pid, -1);
-        if (page_for_pd != -1)
+        int pfn_for_pd = get_page(pid, -1); // 최소한 Page Directory를 저장하기 위한 페이지가 한 개 필요하다.
+        if (pfn_for_pd == -1)
         {
-            // pd를 위한 페이지 얻었음
+            return -1; // page directory를 위한 page 할당이 불가능하므로 실행이 불가능하다. 오류 케이스 1
         }
+        else
+        {
+            // 페이지 얻을 수 있으면 프로세스 만들 수 있으므로, ku_h_processes에 프로세스를 하나 추가해주고,
+            // 추가된 리스트에 pcb를 하나 만들어서 할당한다. pcb에 들어갈 pdba(실제 페이지의 pte 4개도 만들어서 할당한다)
+            process = ku_h_add_last(ku_h_processes, pid);
+            process->pcb = ku_h_make_pcb(pid);
+            process->pcb->pdba = make_new_ptes();
+        }
+    }
+    else
+    {
+        *ku_cr3 = *process->pcb->pdba; //context change
     }
     return 0;
 }
