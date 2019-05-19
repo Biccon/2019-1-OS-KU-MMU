@@ -1,0 +1,19 @@
+﻿교수님 파일
+fscanf(fd, "%d %d", &fpid, &va)
+fd파일에서 fpid, va 두개씩 EOF날때까지 읽어옴
+
+1. 현재 pid가 fpid가 아니면 ku_run_proc(fpid, &ku_cr3) 실행하여 context switch, ku_cr3은 void *이므로, &ku_cr3은 void**
+2. pa = pysical address = ku_traverse(ku_cr3, va);
+ku_traverse함수를 이용해서 ku_cr3을 pdbr로 생각하고 va탐색을 함?
+pa가 0보다 작으면 페이지 fault가 발생한 것이고, ku_page_fault를 호출하여 새로 페이지 할당 및 다시 traverse함.
+한번 더 translation한 결과가 실패하면 종료
+성공하면 pid, va, pa 출력
+
+pysical address는 8bit addressing이므로, 1바이트 단위.
+즉 index == pysical address가 됨
+
+init하는 memory size 32byte이고, swapsize 64바이트, 페이지 1개에 4바이트
+즉, pfn은 0~7까지 있을 것이다.
+sfn(swap frame number)은 0~15인데, 실제로 offset이 1부터 가능하므로 1~15?? 또는 1~16(-1씩해서) 해줄 수 있을듯
+
+swap공간에는 pid, 
