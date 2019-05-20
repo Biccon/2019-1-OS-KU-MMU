@@ -108,6 +108,7 @@ int get_page(char swappable) {
       printf("스왑당할 페이지가 스왑당하고 바뀐 pte의 data");
       print_bit(ku_h_memory[pfn].pba -> data); // 4가 출력되는거보니까 맞음.. 그러니까 이걸 이제 스왑페이지에 넣어주고 swap인덱스를 처넣어주자구
       */
+      set_ku_pte_swap_offset((ku_h_memory+pfn)->pba, ku_h_swap_index++); // 스왑해주고 offset을 스왑된거로 바꿔줘야지..ㅋㅋ
       ku_h_memory[pfn].pba = NULL;
       // 값이 1이상인것 중에 minimum찾아서 주면 되겠당^^
     } else {
