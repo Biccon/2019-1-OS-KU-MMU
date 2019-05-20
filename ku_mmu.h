@@ -6,12 +6,6 @@ typedef struct ku_pte {
   unsigned char data;
 } ku_pte;
 
-typedef struct ku_h_page {
-  int swapable;
-  struct ku_pte* pba;  // page base address *ku_pte를 4개 가질 수 있는 페이지
-  struct ku_pte* owner;
-} ku_h_page;
-
 ku_pte* ku_h_memory;
 int* ku_h_memory_swapable;
 int* ku_h_swapspace;
@@ -164,7 +158,7 @@ int ku_page_fault(char pid, char va) {
   }
 
   // printf("pmd에 pt가 매핑되어있나요?\n");
-  ku_pte* pmd = (ku_h_memory + pfn_of_pmd*4) + offset_pmd;  // pmd 접근할 때는 ku_h_page를 통해 얻어놓은 pfn을
+  ku_pte* pmd = (ku_h_memory + pfn_of_pmd*4) + offset_pmd;  // pmd 접근할 때는 ku_h_memory+pfn*4를 통해 얻어놓은 pfn을
                              // 통해 접근합니다.
   int pfn_of_pt = -1;
   if (pmd->data == 0) {  // 위에서 마찬가지로 pmd에 대해 pt 페이지가 할당됐나
@@ -243,8 +237,7 @@ void* ku_mmu_init(unsigned int mem_size, unsigned int swap_size) {
   ku_h_swap_count = swap_size / ku_h_page_size;
 
   ku_h_processes = (ku_h_linkedlist*)malloc(sizeof(ku_h_linkedlist));
-  ku_h_memory = (ku_h_page*)calloc(
-      mem_size, sizeof(ku_h_page));  // page개수만큼만 생각하자
+  ku_h_memory = (ku_h_pte*)calloc(mem_size, sizeof(ku_h_pte));  // page개수만큼만 생각하자
   ku_h_memory_swapable =
       (int*)calloc(ku_h_page_count, sizeof(int));  // page개수만큼만 생각하자
   ku_h_swapspace =
