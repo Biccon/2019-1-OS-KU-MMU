@@ -203,7 +203,7 @@ int ku_page_fault(char pid, char va) {
     } else {
       set_ku_pte_pfn(pt, pfn_of_page);
       ku_h_memory[pfn_of_page*4] = pt;
-      ku_h_memory[pfn_of_page*4+1] = NULL
+      ku_h_memory[pfn_of_page*4+1] = NULL;
       ku_h_memory[pfn_of_page*4+2] = NULL;
       ku_h_memory[pfn_of_page*4+3] = NULL;
     }
