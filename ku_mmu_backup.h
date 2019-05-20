@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ku_linkedlist.h"
+// ku_mmu_backup.h은 ku_mmu.h에서 memory를 ku_pte *로 memory_size만큼 만들고 *4+0, *4+1, *4+2, *4+3에 pte를 각각 할당하게 바꾸다가 실패했을 때를 위해 남겨놓은 백업파일
 
 typedef struct ku_pte {
   unsigned char data;
