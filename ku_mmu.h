@@ -169,10 +169,10 @@ int ku_page_fault(char pid, char va) {
       set_ku_pte_pfn(pmd, pfn_of_pt);
 
       ku_pte *new_ptes = make_new_ptes();
-      ku_h_memory[pfn_of_pt*4] = new_ptes[0];
-      ku_h_memory[pfn_of_pt*4+1] = new_ptes[1];
-      ku_h_memory[pfn_of_pt*4+2] = new_ptes[2];
-      ku_h_memory[pfn_of_pt*4+3] = new_ptes[3];
+      ku_h_memory+pfn_of_pt*4 = new_ptes;
+      ku_h_memory+(pfn_of_pt*4+1) = new_ptes+1;
+      ku_h_memory+(pfn_of_pt*4+2)= new_ptes+2;
+      ku_h_memory+(pfn_of_pt*4+3) = new_ptes+3;
     }
   } else {
     char present_of_pmd = get_ku_pte_present(pmd);
@@ -195,10 +195,10 @@ int ku_page_fault(char pid, char va) {
       return -1;  // 페이지 할당해줄 거 없으면 마찬가지로 오류
     } else {
       set_ku_pte_pfn(pt, pfn_of_page);
-      ku_h_memory[pfn_of_page*4] = pt;
-      ku_h_memory[pfn_of_page*4+1] = NULL;
-      ku_h_memory[pfn_of_page*4+2] = NULL;
-      ku_h_memory[pfn_of_page*4+3] = NULL;
+      ku_h_memory+(pfn_of_page*4)= pt;
+      ku_h_memory+(pfn_of_page*4+1) = NULL;
+      ku_h_memory+(pfn_of_page*4+2) = NULL;
+      ku_h_memory+(pfn_of_page*4+3) = NULL;
     }
   } else {
     char present_of_page =
