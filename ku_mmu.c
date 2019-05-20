@@ -16,7 +16,18 @@ int main(int argc, char **argv) {
   // ku_page_fault(0, 0xA1); // 10(2) 10(2) 00 01(1)
   ku_mmu_init(32, 64);
 
-  ku_run_proc(1, &ku_cr3); 
+  printf("process1 run success %d\n", ku_run_proc(1, &ku_cr3));
+  printf("process returned ku_cr3 %p\n", ku_cr3);
+  page_travel(ku_cr3, 0);
+  printf("page fault success %d\n", ku_page_fault(1, 100));
+  page_travel(ku_cr3, 0);
+  //////// process 2 run
+  printf("process2 run success %d\n", ku_run_proc(2, &ku_cr3));
+  printf("process returned ku_cr3 %p\n", ku_cr3);
+  page_travel(ku_cr3, 0);
+  printf("page fault success %d\n", ku_page_fault(2, 100));
+  page_travel(ku_cr3, 0);
+  /*
   ku_page_fault(1, 100); // -1 -1 -1 1 0 0 0 0
   print_page();  // pm 생성 한개
   print_all_page_entries();
@@ -39,7 +50,7 @@ int main(int argc, char **argv) {
   printf("fault %d\n", ku_page_fault(1, 16)); // -1 -1 -1 
   print_page();  // pm 생성 한개
   print_all_page_entries();
-
+*/
   exit(-1);
   printf("------rerun\n");
   printf("fault %d\n", ku_page_fault(1, 96));

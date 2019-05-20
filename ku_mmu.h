@@ -149,7 +149,6 @@ int ku_page_fault(char pid, char va) {
     if (pfn_of_pmd == -1) {
       return -1;
     } else {
-      printf("pmd pfn %d\n", pfn_of_pmd);
       set_ku_pte_pfn(
           pd,
           pfn_of_pmd);  // present 1로 바꾸고, 할당된 pfn으로 pd의 pte에 넣어줌
