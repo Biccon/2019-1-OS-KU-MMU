@@ -137,7 +137,7 @@ int ku_page_fault(char pid, char va) {
       set_ku_pte_pfn(
           pd,
           pfn_of_pmd);  // present 1로 바꾸고, 할당된 pfn으로 pd의 pte에 넣어줌
-      ku_h_pte *new_ptes = make_new_ptes();
+      ku_pte *new_ptes = make_new_ptes();
       ku_h_memory[pfn_of_pmd*4] = new_ptes[0];
       ku_h_memory[pfn_of_pmd*4+1] = new_ptes[1];
       ku_h_memory[pfn_of_pmd*4+2] = new_ptes[2];
@@ -158,8 +158,7 @@ int ku_page_fault(char pid, char va) {
   }
 
   // printf("pmd에 pt가 매핑되어있나요?\n");
-  ku_pte* pmd = (ku_h_memory + pfn_of_pmd*4) + offset_pmd;  // pmd 접근할 때는 ku_h_memory+pfn*4를 통해 얻어놓은 pfn을
-                             // 통해 접근합니다.
+  ku_pte* pmd = (ku_h_memory + pfn_of_pmd*4) + offset_pmd;  // pmd 접근할 때는 ku_h_memory+pfn*4를 통해 얻어놓은 pfn을통해 접근합니다.
   int pfn_of_pt = -1;
   if (pmd->data == 0) {  // 위에서 마찬가지로 pmd에 대해 pt 페이지가 할당됐나
     // 확인합니다. 할당되지 않은 조건이므로 할당이 필요함.
@@ -169,7 +168,7 @@ int ku_page_fault(char pid, char va) {
     } else {
       set_ku_pte_pfn(pmd, pfn_of_pt);
 
-      ku_h_pte *new_ptes = make_new_ptes();
+      ku_pte *new_ptes = make_new_ptes();
       ku_h_memory[pfn_of_pt*4] = new_ptes[0];
       ku_h_memory[pfn_of_pt*4+1] = new_ptes[1];
       ku_h_memory[pfn_of_pt*4+2] = new_ptes[2];
@@ -237,7 +236,7 @@ void* ku_mmu_init(unsigned int mem_size, unsigned int swap_size) {
   ku_h_swap_count = swap_size / ku_h_page_size;
 
   ku_h_processes = (ku_h_linkedlist*)malloc(sizeof(ku_h_linkedlist));
-  ku_h_memory = (ku_h_pte*)calloc(mem_size, sizeof(ku_h_pte));  // page개수만큼만 생각하자
+  ku_h_memory = (ku_pte*)calloc(mem_size, sizeof(ku_pte));  // page개수만큼만 생각하자
   ku_h_memory_swapable =
       (int*)calloc(ku_h_page_count, sizeof(int));  // page개수만큼만 생각하자
   ku_h_swapspace =
