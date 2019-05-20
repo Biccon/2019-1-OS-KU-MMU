@@ -13,7 +13,6 @@ unsigned char test2(char pfn, char present) {
 }
 int main(int argc, char **argv) {
   void *ku_cr3;
-  // ku_page_fault(0, 0xA1); // 10(2) 10(2) 00 01(1)
   ku_mmu_init(32, 64);
 
   printf("process1 run success %d\n", ku_run_proc(1, &ku_cr3));

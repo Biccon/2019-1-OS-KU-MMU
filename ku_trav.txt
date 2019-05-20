@@ -1,0 +1,110 @@
+
+ku_trav.o:	file format ELF64-x86-64
+
+Disassembly of section .text:
+ku_traverse:
+       0:	55 	pushq	%rbp
+       1:	48 89 e5 	movq	%rsp, %rbp
+       4:	48 89 7d e8 	movq	%rdi, -24(%rbp)
+       8:	89 f0 	movl	%esi, %eax
+       a:	48 89 55 d8 	movq	%rdx, -40(%rbp)
+       e:	88 45 e4 	movb	%al, -28(%rbp)
+      11:	0f be 45 e4 	movsbl	-28(%rbp), %eax
+      15:	25 c0 00 00 00 	andl	$192, %eax
+      1a:	c1 f8 06 	sarl	$6, %eax
+      1d:	88 45 f3 	movb	%al, -13(%rbp)
+      20:	0f be 45 e4 	movsbl	-28(%rbp), %eax
+      24:	83 e0 30 	andl	$48, %eax
+      27:	c1 f8 04 	sarl	$4, %eax
+      2a:	88 45 f4 	movb	%al, -12(%rbp)
+      2d:	0f be 45 e4 	movsbl	-28(%rbp), %eax
+      31:	83 e0 0c 	andl	$12, %eax
+      34:	c1 f8 02 	sarl	$2, %eax
+      37:	88 45 f5 	movb	%al, -11(%rbp)
+      3a:	0f b6 45 e4 	movzbl	-28(%rbp), %eax
+      3e:	83 e0 03 	andl	$3, %eax
+      41:	88 45 f6 	movb	%al, -10(%rbp)
+      44:	80 7d e4 00 	cmpb	$0, -28(%rbp)
+      48:	75 0a 	jne	10 <ku_traverse+0x54>
+      4a:	b8 00 00 00 00 	movl	$0, %eax
+      4f:	e9 fd 00 00 00 	jmp	253 <ku_traverse+0x151>
+      54:	48 0f be 55 f3 	movsbq	-13(%rbp), %rdx
+      59:	48 8b 45 e8 	movq	-24(%rbp), %rax
+      5d:	48 01 d0 	addq	%rdx, %rax
+      60:	48 89 45 f8 	movq	%rax, -8(%rbp)
+      64:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      68:	0f b6 00 	movzbl	(%rax), %eax
+      6b:	0f be c0 	movsbl	%al, %eax
+      6e:	83 e0 01 	andl	$1, %eax
+      71:	85 c0 	testl	%eax, %eax
+      73:	74 11 	je	17 <ku_traverse+0x86>
+      75:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      79:	0f b6 00 	movzbl	(%rax), %eax
+      7c:	0f be c0 	movsbl	%al, %eax
+      7f:	83 e0 02 	andl	$2, %eax
+      82:	85 c0 	testl	%eax, %eax
+      84:	75 0a 	jne	10 <ku_traverse+0x90>
+      86:	b8 00 00 00 00 	movl	$0, %eax
+      8b:	e9 c1 00 00 00 	jmp	193 <ku_traverse+0x151>
+      90:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      94:	0f b6 00 	movzbl	(%rax), %eax
+      97:	0f be c0 	movsbl	%al, %eax
+      9a:	25 fc 00 00 00 	andl	$252, %eax
+      9f:	c1 f8 02 	sarl	$2, %eax
+      a2:	c1 e0 02 	shll	$2, %eax
+      a5:	48 63 d0 	movslq	%eax, %rdx
+      a8:	48 0f be 45 f4 	movsbq	-12(%rbp), %rax
+      ad:	48 01 c2 	addq	%rax, %rdx
+      b0:	48 8b 45 d8 	movq	-40(%rbp), %rax
+      b4:	48 01 d0 	addq	%rdx, %rax
+      b7:	48 89 45 f8 	movq	%rax, -8(%rbp)
+      bb:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      bf:	0f b6 00 	movzbl	(%rax), %eax
+      c2:	0f be c0 	movsbl	%al, %eax
+      c5:	83 e0 01 	andl	$1, %eax
+      c8:	85 c0 	testl	%eax, %eax
+      ca:	74 11 	je	17 <ku_traverse+0xdd>
+      cc:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      d0:	0f b6 00 	movzbl	(%rax), %eax
+      d3:	0f be c0 	movsbl	%al, %eax
+      d6:	83 e0 02 	andl	$2, %eax
+      d9:	85 c0 	testl	%eax, %eax
+      db:	75 07 	jne	7 <ku_traverse+0xe4>
+      dd:	b8 00 00 00 00 	movl	$0, %eax
+      e2:	eb 6d 	jmp	109 <ku_traverse+0x151>
+      e4:	48 8b 45 f8 	movq	-8(%rbp), %rax
+      e8:	0f b6 00 	movzbl	(%rax), %eax
+      eb:	0f be c0 	movsbl	%al, %eax
+      ee:	25 fc 00 00 00 	andl	$252, %eax
+      f3:	c1 f8 02 	sarl	$2, %eax
+      f6:	c1 e0 02 	shll	$2, %eax
+      f9:	48 63 d0 	movslq	%eax, %rdx
+      fc:	48 0f be 45 f5 	movsbq	-11(%rbp), %rax
+     101:	48 01 c2 	addq	%rax, %rdx
+     104:	48 8b 45 d8 	movq	-40(%rbp), %rax
+     108:	48 01 d0 	addq	%rdx, %rax
+     10b:	48 89 45 f8 	movq	%rax, -8(%rbp)
+     10f:	48 8b 45 f8 	movq	-8(%rbp), %rax
+     113:	0f b6 00 	movzbl	(%rax), %eax
+     116:	0f be c0 	movsbl	%al, %eax
+     119:	83 e0 01 	andl	$1, %eax
+     11c:	85 c0 	testl	%eax, %eax
+     11e:	74 11 	je	17 <ku_traverse+0x131>
+     120:	48 8b 45 f8 	movq	-8(%rbp), %rax
+     124:	0f b6 00 	movzbl	(%rax), %eax
+     127:	0f be c0 	movsbl	%al, %eax
+     12a:	83 e0 02 	andl	$2, %eax
+     12d:	85 c0 	testl	%eax, %eax
+     12f:	75 07 	jne	7 <ku_traverse+0x138>
+     131:	b8 00 00 00 00 	movl	$0, %eax
+     136:	eb 19 	jmp	25 <ku_traverse+0x151>
+     138:	48 8b 45 f8 	movq	-8(%rbp), %rax
+     13c:	0f b6 00 	movzbl	(%rax), %eax
+     13f:	83 e0 fc 	andl	$-4, %eax
+     142:	89 c2 	movl	%eax, %edx
+     144:	0f b6 45 f6 	movzbl	-10(%rbp), %eax
+     148:	01 d0 	addl	%edx, %eax
+     14a:	88 45 f7 	movb	%al, -9(%rbp)
+     14d:	0f b6 45 f7 	movzbl	-9(%rbp), %eax
+     151:	5d 	popq	%rbp
+     152:	c3 	retq
