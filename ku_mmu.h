@@ -123,9 +123,7 @@ int ku_page_fault(char pid, char va) {
   char offset = (va & 0x03);           // 00000011
   // printf("%u %u %u %u\n", offset_pd, offset_pmd, offset_pt, offset);
   // travel 시작~~
-  ku_pte* pd =
-      pcb->pdba +
-      offset_pd;  // 처음 pd는 pdba로 접근합니다. pcb가 주소를 가지기 때문에.
+  ku_pte* pd =ku_h_memory + pcb->pdba + offset_pd;  // 처음 pd는 pdba로 접근합니다. pcb가 주소를 가지기 때문에.
 
   int pfn_of_pmd = -1;
   // printf("pd에 pmd가 매핑되어있나요?\n");
@@ -261,9 +259,9 @@ int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
       // 할당한다. pcb에 들어갈 pdba(실제 페이지의 pte 4개도 만들어서 할당한다)
       process = ku_h_add_last(ku_h_processes, pid);
       process->pcb = ku_h_make_pcb(pid);
-      process->pcb->pdba = make_new_ptes();
+      process->pcb->pdba = pfn_for_pd * 4;
     }
   }
-  *ku_cr3 = (struct ku_pte*)(process->pcb->pdba + 0);  // context change
+  *ku_cr3 = (struct ku_pte*)(ku_h_memory+process->pcb->pdba);  // context change
   return 0;
 }

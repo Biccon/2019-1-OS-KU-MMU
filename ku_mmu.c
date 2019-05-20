@@ -17,15 +17,12 @@ int main(int argc, char **argv) {
 
   printf("process1 run success %d\n", ku_run_proc(1, &ku_cr3));
   printf("process returned ku_cr3 %p\n", ku_cr3);
-  page_travel(ku_cr3, 0);
   printf("page fault success %d\n", ku_page_fault(1, 100));
-  page_travel(ku_cr3, 0);
   //////// process 2 run
   printf("process2 run success %d\n", ku_run_proc(2, &ku_cr3));
   printf("process returned ku_cr3 %p\n", ku_cr3);
-  page_travel(ku_cr3, 0);
   printf("page fault success %d\n", ku_page_fault(2, 100));
-  page_travel(ku_cr3, 0);
+  print_page();
   /*
   ku_page_fault(1, 100); // -1 -1 -1 1 0 0 0 0
   print_page();  // pm 생성 한개

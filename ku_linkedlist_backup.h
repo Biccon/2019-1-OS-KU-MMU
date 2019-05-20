@@ -4,7 +4,7 @@
 typedef struct ku_h_pcb
 {
     char pid;             // process pid
-    int pdba; // page directory base address -> offset
+    struct ku_pte *pdba; // page directory base address
 } ku_h_pcb;
 
 typedef struct ku_h_node
@@ -24,7 +24,7 @@ ku_h_pcb *ku_h_make_pcb(char pid)
 {
     ku_h_pcb *new_pcb = (ku_h_pcb *)malloc(sizeof(ku_h_pcb));
     new_pcb->pid = pid;
-    new_pcb->pdba = 0;
+    new_pcb->pdba = NULL;
     return new_pcb;
 }
 int ku_h_get_size(ku_h_linkedlist *list)
