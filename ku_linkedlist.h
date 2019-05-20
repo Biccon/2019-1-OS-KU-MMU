@@ -4,7 +4,7 @@
 typedef struct ku_h_pcb
 {
     char pid;             // process pid
-    struct ku_pte **pdba; // page directory base address
+    struct ku_pte *pdba; // page directory base address
 } ku_h_pcb;
 
 typedef struct ku_h_node

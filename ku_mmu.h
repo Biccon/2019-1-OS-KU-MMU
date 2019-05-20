@@ -16,10 +16,11 @@ typedef struct ku_pte
 typedef struct ku_h_page
 {
     int swapable;
-    struct ku_pte **pba; // page base address *ku_pte를 4개 가질 수 있는 페이지
+    struct ku_pte *pba; // page base address *ku_pte를 4개 가질 수 있는 페이지
 } ku_h_page;
 
 ku_h_page *ku_h_memory;
+int *ku_h_memory_swapable;
 int *ku_h_swapspace;
 ku_h_linkedlist *ku_h_processes;
 
@@ -35,7 +36,7 @@ void print_page()
 {
     for (int i = 0; i < ku_h_page_count; i++)
     {
-        printf("%d ", ku_h_memory[i].swapable);
+        printf("%d ", ku_h_memory_swapable[i]);
     }
     printf("\n");
 }
@@ -68,13 +69,9 @@ unsigned char get_ku_pte_present(struct ku_pte *pte)
     return pte -> data & 0x1;
 }
 
-struct ku_pte **make_new_ptes()
+struct ku_pte *make_new_ptes()
 {
-    struct ku_pte **ptes = (struct ku_pte **)malloc(sizeof(struct ku_pte *) * ku_h_page_size);
-    for (int i = 0; i < ku_h_page_size; i++)
-    {
-        ptes[i] = (struct ku_pte *)calloc(1, sizeof(struct ku_pte));
-    }
+    struct ku_pte *ptes = (struct ku_pte *)calloc(ku_h_page_size, sizeof(struct ku_pte));
     return ptes;
 }
 
@@ -83,7 +80,7 @@ int get_count(int data)
     int count = 0;
     for (int i = 0; i < ku_h_page_count; i++)
     {
-        if (ku_h_memory[i].swapable == data)
+        if (ku_h_memory_swapable[i] == data)
             count++;
     }
     return count;
@@ -95,7 +92,7 @@ int get_firstin_page()
     int min_index = -1;
     for (int i = 0; i < ku_h_page_count; i++)
     {
-        int temp = ku_h_memory[i].swapable;
+        int temp = ku_h_memory_swapable[i];
         if (temp < min && temp > 0)
         {
             min = temp;
@@ -109,7 +106,7 @@ int get_page(char swappable)
 {
     int pfn = -1;
     //printf("------------------------------\n");
-    printf("before free : %d, swap X : %d, swapable : %d\n", get_count(0), get_count(-1), ku_h_page_count - (get_count(0) + get_count(-1)));
+    //printf("before free : %d, swap X : %d, swapable : %d\n", get_count(0), get_count(-1), ku_h_page_count - (get_count(0) + get_count(-1)));
     if (get_count(0) == 0)                    // 0은 할당안된 페이지
     {                                         // 모든 페이지 공간이 가득차있음
         if (get_count(-1) != ku_h_page_count) // -1이 swap불가능한 페이지
@@ -118,7 +115,7 @@ int get_page(char swappable)
             //swap insert ku_h_memory[pfn].pba
             // 스왑이루어지면 됨, 스왑 된 결과값을 어떻게 주느냐가 문젠데..
             // ku_pte를 매개변수로 받아서, present 0으로 바꾸고, offset에 swapindex넣으면 될듯
-            ku_h_memory[pfn].swapable = (swappable == -1) ? swappable : ku_h_page_index++; // 새로 할당해준것임.
+            ku_h_memory_swapable[pfn] = (swappable == -1) ? swappable : ku_h_page_index++; // 새로 할당해준것임.
             ku_h_memory[pfn].pba = NULL;
             // 값이 1이상인것 중에 minimum찾아서 주면 되겠당^^
         }
@@ -131,15 +128,15 @@ int get_page(char swappable)
     {
         for (int i = 0; i < ku_h_page_count; i++)
         {
-            if (ku_h_memory[i].swapable == 0)
+            if (ku_h_memory_swapable[i] == 0)
             {
                 pfn = i;
-                ku_h_memory[i].swapable = (swappable == -1) ? swappable : ku_h_page_index++;
+                ku_h_memory_swapable[i] = (swappable == -1) ? swappable : ku_h_page_index++;
                 break;
             }
         }
     }
-    printf("after free : %d, swap X : %d, swapable : %d\n", get_count(0), get_count(-1), ku_h_page_count - (get_count(0) + get_count(-1)));
+    //printf("after free : %d, swap X : %d, swapable : %d\n", get_count(0), get_count(-1), ku_h_page_count - (get_count(0) + get_count(-1)));
 
     return pfn;
 }
@@ -153,19 +150,20 @@ int ku_page_fault(char pid, char va)
     char offset_pmd = (va & 0x30) >> 4; // page middle directory offset
     char offset_pt = (va & 0x0C) >> 2;  // page table offset == VPN
     char offset = (va & 0x03);
-    printf("%u %u %u %u\n", offset_pd, offset_pmd, offset_pt, offset);
+    //printf("%u %u %u %u\n", offset_pd, offset_pmd, offset_pt, offset);
     // travel 시작~~
-    ku_pte *pd = *(pcb->pdba+offset_pd); // 처음 pd는 pdba로 접근합니다. pcb가 주소를 가지기 때문에.
+    ku_pte *pd = pcb->pdba + offset_pd; // 처음 pd는 pdba로 접근합니다. pcb가 주소를 가지기 때문에.
+    
     int pfn_of_pmd = -1;
-    printf("pd에 pmd가 매핑되어있나요?\n");
+    //printf("pd에 pmd가 매핑되어있나요?\n");
     if(pd->data == 0) { // pd가 가리키는 pmd의 페이지가 할당되지 않음
         pfn_of_pmd = get_page(-1); // unswapable
-        printf("get new page %d\n", pfn_of_pmd);
         if(pfn_of_pmd == -1) {
             return -1;
         } else {
             set_ku_pte_pfn(pd, pfn_of_pmd); // present 1로 바꾸고, 할당된 pfn으로 pd의 pte에 넣어줌
             (ku_h_memory + pfn_of_pmd) -> pba = make_new_ptes();
+            
             //첫 접근이니까 ptes도 만들어줍니다.(페이지 할당 받았으니까~)
         }
     } else {
@@ -178,12 +176,8 @@ int ku_page_fault(char pid, char va)
         }
     }
 
-    print_page();
-    printf("pfn_of_pmd : %d\n", pfn_of_pmd);
-    printf("======================\n");
-
-    printf("pmd에 pt가 매핑되어있나요?\n");
-    ku_pte *pmd = *(((ku_h_memory + pfn_of_pmd) -> pba) + offset_pmd); // pmd 접근할 때는 ku_h_page를 통해 얻어놓은 pfn을 통해 접근합니다. 
+    //printf("pmd에 pt가 매핑되어있나요?\n");
+    ku_pte *pmd = ((ku_h_memory + pfn_of_pmd) -> pba) + offset_pmd; // pmd 접근할 때는 ku_h_page를 통해 얻어놓은 pfn을 통해 접근합니다. 
     int pfn_of_pt = -1;
     if(pmd->data == 0){ // 위에서 마찬가지로 pmd에 대해 pt 페이지가 할당됐나 확인합니다. 할당되지 않은 조건이므로 할당이 필요함.
         pfn_of_pt = get_page(-1); // pt를 위한 페이지 할당
@@ -201,12 +195,9 @@ int ku_page_fault(char pid, char va)
             pfn_of_pt = get_ku_pte_pfn(pmd);
         }
     }
-    print_page();
-    printf("pfn_of_pt : %d\n", pfn_of_pt);
-    printf("======================\n");
 
-    printf("pt에 page가 매핑되어있나요?\n");
-    ku_pte *pt = *(((ku_h_memory + pfn_of_pt) -> pba) + offset_pt);
+    //printf("pt에 page가 매핑되어있나요?\n");
+    ku_pte *pt = ((ku_h_memory + pfn_of_pt) -> pba) + offset_pt;
     int pfn_of_page = -1;
     if(pt -> data == 0){ // 여기선 스왑가능함 조심합시다. 마찬가지로 아에 0일때는 할당이 안되어있는 pte입니다.
         pfn_of_page = get_page(0); // 페이지 할당해줍니다. 여기서는 스왑가능하므로 매개변수 -1이 아닌 아무거나 ㅇㅇ..
@@ -223,6 +214,7 @@ int ku_page_fault(char pid, char va)
             if(pfn_of_page == -1){
                 return -1;
             } else {
+                set_ku_pte_pfn(pt, pfn_of_page); // 스왑받은 페이지를 다시 pt에 pfn에 넣어줭
                 ku_h_swapspace[get_ku_pte_swap_offset(pt)] = 0; // 스왑스페이스에서 가져왔다고 표시해줌
                                                                 // 꺼내온것만 표시해주면 되고 나머지는 필요없을듯.
             }
@@ -231,9 +223,6 @@ int ku_page_fault(char pid, char va)
             // 매핑된 페이지에 내용은 중요하지 않은 값.
         }
     }
-    print_page();
-    printf("pfn_of_page : %d\n", pfn_of_page);
-    printf("====================== page fault function 끝\n");
     
     //printf("%u %u %u %u\n", offset_pd, offset_pmd, offset_pt, offset);
     return 0;
@@ -248,6 +237,7 @@ void *ku_mmu_init(unsigned int mem_size, unsigned int swap_size)
 
     ku_h_processes = (ku_h_linkedlist *)malloc(sizeof(ku_h_linkedlist));
     ku_h_memory = (ku_h_page *)calloc(ku_h_page_count, sizeof(ku_h_page)); // page개수만큼만 생각하자
+    ku_h_memory_swapable = (int *)calloc(ku_h_page_count, sizeof(int)); // page개수만큼만 생각하자
     ku_h_swapspace = (int *)calloc(ku_h_swap_count, sizeof(int));          // offset 1부터 시작
 
     ku_h_init_list(ku_h_processes);
@@ -274,6 +264,6 @@ int ku_run_proc(char pid, struct ku_pte **ku_cr3)
             process->pcb->pdba = make_new_ptes();
         }
     }
-    *ku_cr3 = *(process->pcb->pdba + 0); //context change
+    *ku_cr3 = (struct ku_pte*)(process->pcb->pdba + 0); //context change
     return 0;
 }
