@@ -266,10 +266,14 @@ int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
 }
 
 void show_page(){
+  printf("PFN\t[00] [01] [10] [11]\n");
   for(int i=0;i<ku_h_mem_size;i++){
     if(i%4 == 0){
-      printf("%d", i);
+      printf("PFN %d\t", i/4);
     }
-    printf("\t%d\n", ku_h_memory[i].data);
+    printf("%4d ", ku_h_memory[i].data);
+    if(i%4==3)
+     printf("\n");
   }
+  printf("---------------------------------\n");
 }
