@@ -271,7 +271,11 @@ void show_page(){
     if(i%4 == 0){
       printf("PFN %d\t", i/4);
     }
-    printf("%6d ", get_ku_pte_pfn(ku_h_memory+i));
+    if(get_ku_pte_present(ku_h_memory+i) == 0){
+        printf("s%5d ", get_ku_pte_swap_offset(ku_h_memory+i));
+    } else {
+      printf("%6d ", get_ku_pte_pfn(ku_h_memory+i));
+    }
     if(i%4==3)
      printf("\n");
   }
