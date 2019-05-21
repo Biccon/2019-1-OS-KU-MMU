@@ -1,11 +1,27 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "ku_linkedlist.h"
-
 struct ku_pte {
   unsigned char data;
 };
 
+typedef struct ku_h_pcb
+{
+    char pid;             // process pid
+    int pdba; // page directory base address -> offset
+} ku_h_pcb;
+
+typedef struct ku_h_node
+{
+    ku_h_pcb *pcb;
+    struct ku_h_node *prev;
+    struct ku_h_node *next;
+} ku_h_node;
+
+typedef struct ku_h_linkedlist
+{
+    ku_h_node *header;
+    ku_h_node *tailer;
+} ku_h_linkedlist;
+
+/* Global Variables */
 struct ku_pte* ku_h_memory;
 int* ku_h_memory_swapable;
 int* ku_h_swapspace;
@@ -19,13 +35,66 @@ unsigned int ku_h_swap_count;
 unsigned int ku_h_page_index = 1;
 unsigned int ku_h_swap_index = 1;
 
-void print_page() {
-  for (int i = 0; i < ku_h_page_count; i++) {
-    printf("%d ", ku_h_memory_swapable[i]);
-  }
-  printf("\n");
+/* LinkedList Functions */
+ku_h_pcb *ku_h_make_pcb(char pid)
+{
+    ku_h_pcb *new_pcb = (ku_h_pcb *)malloc(sizeof(ku_h_pcb));
+    new_pcb->pid = pid;
+    new_pcb->pdba = 0;
+    return new_pcb;
 }
 
+ku_h_node *ku_h_add_before(ku_h_node *node, char pid)
+{
+    ku_h_node *new_node = (ku_h_node *)malloc(sizeof(ku_h_node));
+    new_node->pcb = ku_h_make_pcb(pid);
+    new_node->prev = node->prev;
+    new_node->next = node;
+
+    node->prev->next = new_node;
+    node->prev = new_node;
+    return new_node;
+}
+
+ku_h_node *ku_h_add_last(ku_h_linkedlist *list, char pid)
+{
+    return ku_h_add_before(list->tailer, pid);
+}
+
+ku_h_node *ku_h_get_node_by_index(ku_h_linkedlist *list, int index)
+{
+    ku_h_node *temp = list->header->next;
+    for (int i = 0; (i < index && temp != list->tailer); i++)
+    {
+        temp = temp->next;
+    }
+    return temp;
+}
+
+ku_h_node *ku_h_get_node_by_pid(ku_h_linkedlist *list, char pid)
+{
+    ku_h_node *temp = list->header->next;
+    while (temp != list->tailer)
+    {
+        if (temp->pcb->pid == pid)
+            return temp;
+        temp = temp->next;
+    }
+    return NULL;
+}
+
+void ku_h_init_list(ku_h_linkedlist *list)
+{
+    list->header = (ku_h_node *)malloc(sizeof(ku_h_node));
+    list->tailer = (ku_h_node *)malloc(sizeof(ku_h_node));
+
+    list->header->prev = NULL;
+    list->header->next = list->tailer;
+
+    list->tailer->prev = list->header;
+    list->tailer->next = NULL;
+}
+/* PTE Functions */
 void set_ku_pte(struct ku_pte* pte, char a, char b) {
   pte->data = a | b;
 }
@@ -48,6 +117,8 @@ unsigned char get_ku_pte_swap_offset(struct ku_pte* pte) {
 
 unsigned char get_ku_pte_present(struct ku_pte* pte) { return pte->data & 0x1; }
 
+
+/* Getting page Functions */
 int get_count(int data) {
   int count = 0;
   for (int i = 0; i < ku_h_page_count; i++) {
