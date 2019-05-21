@@ -264,3 +264,14 @@ int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
   *ku_cr3 = (struct ku_pte*)(ku_h_memory+process->pcb->pdba);  // context change
   return 0;
 }
+
+void show_page(){
+  for(int i=0;i<ku_h_mem_size;i++){
+    if(i % 4!=0){
+      printf("\t%d\n", (int)(ku_h_memory[i].data / 4));
+    }else{
+      printf("--------------------\n");
+      printf("%d\t%d\n", i/4, (int)(ku_h_memory[i].data/4));
+    }
+  }
+}
