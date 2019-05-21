@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 			printf("[%d] VA: %hhd -> Page Fault\n", pid, va);
+
 			/* Retry after page fault */
 			pa = ku_traverse(ku_cr3, va, pmem); 
 			if(pa == 0){
@@ -68,7 +69,6 @@ int main(int argc, char *argv[])
 
 		printf("[%d] VA: %hhd -> PA: %hhd\n", pid, va, pa);
 	}
-	show_page();
 
 	ku_mmu_fin(fd, pmem);
 	return 0;
