@@ -8,7 +8,7 @@ int ku_traverse(void *ku_cr3, char va, void *pmem) {
     char offset_pt = (va & 0x0C) >> 2;   // page table offset == VPN 00001100
     char offset = (va & 0x03);           // 00000011
 
-    if(pmem == NULL)
+    if(pmem == 0)
         return 0;
     
     pte = ku_cr3 + offset_pd; // page directory의 pde 탐색
