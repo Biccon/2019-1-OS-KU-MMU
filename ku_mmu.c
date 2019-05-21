@@ -67,3 +67,13 @@ int main(int argc, char **argv) {
                  // printf("fault %d\n", ku_page_fault(2, 100));
   // print_page();
 }
+
+
+void show_page(){
+  for(int i=0;i<ku_h_mem_size;i++){
+    if(i%4 == 0){
+      printf("%d", i);
+    }
+    printf("\t%d\n", ku_h_memory[i].data);
+  }
+}
