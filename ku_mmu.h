@@ -83,7 +83,6 @@ int get_page(char swappable) {
     if (get_count(-1) != ku_h_page_count)  // -1이 swap불가능한 페이지
     {
       pfn = get_firstin_page();
-      printf("swapswapswapswapswapswapswapswap %d\n", pfn);
       ku_h_memory_swapable[pfn] =
           (swappable == -1) ? swappable
                             : ku_h_page_index++;  // 새로 할당해준것임.

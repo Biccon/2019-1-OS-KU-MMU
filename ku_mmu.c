@@ -22,7 +22,16 @@ int main(int argc, char **argv) {
   printf("process2 run success %d\n", ku_run_proc(2, &ku_cr3));
   printf("process returned ku_cr3 %p\n", ku_cr3);
   printf("page fault success %d\n", ku_page_fault(2, 100));
-  print_page();
+  
+  printf("pfn\tpfn\toff\n");
+  for(int i=0;i<ku_h_mem_size;i++){
+    if(i % 4!=0){
+      printf("\t%d\n", (int)(ku_h_memory[i].data / 4));
+    }else{
+      printf("--------------------\n");
+      printf("%d\t%d\n", i/4, (int)(ku_h_memory[i].data/4));
+    }
+  }
   /*
   ku_page_fault(1, 100); // -1 -1 -1 1 0 0 0 0
   print_page();  // pm 생성 한개
