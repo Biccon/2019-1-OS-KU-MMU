@@ -29,7 +29,6 @@ void print_page() {
 
 void set_ku_pte(struct ku_pte* pte, char a, char b) {
   pte->data = a | b;
-  printf("a | b %d, %d\n", a | b, pte->data);
 }
 
 void set_ku_pte_pfn(struct ku_pte* pte, char pfn) {
@@ -38,7 +37,6 @@ void set_ku_pte_pfn(struct ku_pte* pte, char pfn) {
 
 void set_ku_pte_swap_offset(struct ku_pte* pte, char swap_offset) {
   set_ku_pte(pte, swap_offset << 1, 0);  // 스왑에는 present 0,
-  printf("set 결과 %d\n", pte->data);
 }
 
 unsigned char get_ku_pte_pfn(struct ku_pte* pte) {
@@ -88,14 +86,27 @@ int get_page(char swappable) {
       ku_h_memory_swapable[pfn] =
           (swappable == -1) ? swappable
                             : ku_h_page_index++;  // 새로 할당해준것임.
-      set_ku_pte_swap_offset(ku_h_memory+ku_h_memory[pfn*4].data, ku_h_swap_index++); // 스왑해준다(pfn*4에 pt가 들어있으니까 일단 포인터 이용하고나서 초기화시켜야함)
-      ku_h_memory[pfn*4].data = 0;
+
+                            /* 스왑공간 차례대로 넣어주는거 만들어야함. */
+      int sfn = 0;
+      for(int i=1;i<ku_h_swap_count;i++){ // swap offset은 1부터 가능임
+        if(ku_h_swapspace[i] == 0){
+          sfn = i;
+          ku_h_swapspace[i] = ku_h_swap_index++; // 들어온순서
+          //printf("pfn %d to sfn %d\n", pfn, sfn);
+          break;
+        }
+      }
+      int temp_index_of_pt = ku_h_memory[pfn*4].data;
+      set_ku_pte_swap_offset(ku_h_memory+temp_index_of_pt, sfn); // 스왑해준다(pfn*4에 pt가 들어있으니까 일단 포인터 이용하고나서 초기화시켜야함)
+      ku_h_memory[pfn*4].data = 0;// pt넣어줘야할건데? 스왑 받은곳에서 넣어주기로 했다
       ku_h_memory[pfn*4+1].data = 0;
       ku_h_memory[pfn*4+2].data = 0;
       ku_h_memory[pfn*4+3].data = 0;
-      // 값이 1이상인것 중에 minimum찾아서 주면 되겠당^^
+      // FIFO해서 가장먼저들어온페이지를 스왑공간에 넣어주는거
+      //printf("swap occured pfn %d %d\n", pfn, swappable);
     } else {
-      printf("cannot swap anymore\n");
+      //printf("cannot swap anymore\n");
     }
   } else {
     for (int i = 0; i < ku_h_page_count; i++) {
@@ -185,12 +196,10 @@ int ku_page_fault(char pid, char va) {
   // printf("pt에 page가 매핑되어있나요?\n");
   ku_pte* pt = (ku_h_memory + pfn_of_pt*4) + offset_pt; // 사실 pte였다
   int pfn_of_page = -1;
-  if (pt->data == 0) {  // 여기선 스왑가능함 조심합시다. 마찬가지로 아에 0일때는
-    // 할당이 안되어있는 pte입니다.
-    pfn_of_page = get_page(0);  // 페이지 할당해줍니다. 여기서는 스왑가능하므로
-                                // 매개변수 -1이 아닌 아무거나 ㅇㅇ..
+  if (pt->data == 0) { 
+    pfn_of_page = get_page(0);
     if (pfn_of_page == -1) {
-      return -1;  // 페이지 할당해줄 거 없으면 마찬가지로 오류
+      return -1; 
     } else {
       set_ku_pte_pfn(pt, pfn_of_page);
       ku_h_memory[pfn_of_page*4].data = pfn_of_pt*4+offset_pt; // pt를 새롭게 찾을 방법이 필요함. 실제 pt의 페이지*4+그 pt page안에서의 offset을 넣어놓으면 거기로 직접 접근 가능
@@ -199,24 +208,21 @@ int ku_page_fault(char pid, char va) {
       ku_h_memory[pfn_of_page*4+3].data = 0;
     }
   } else {
-    char present_of_page =
-        get_ku_pte_present(pt);  // 현재 페이지가 스왑됐는지 확인
+    char present_of_page = get_ku_pte_present(pt);  // 현재 페이지가 스왑됐는지 확인
     if (present_of_page == 0) {
-      //스왑됨. 스왑된 페이지에서 다시 가져와야함. get_page해서 가져오도록 하고
-      //마찬가지로 페이지 없으면  return -1하고 끄태면 될듯??
       pfn_of_page = get_page(0);  // 페이지 얻어와본다. 근데 이 페이지 주인은 어케아노 시발련ㄴ아? 페이지 주인은 ku_h_memory[pfn_of_page].pdb에 들어있다링
       
       printf("띠용 스왑가져와 %d\n", pfn_of_page);
       if (pfn_of_page == -1) {
         return -1;
       } else {
-        // 원래꺼
-        set_ku_pte_pfn(
-            pt,
-            pfn_of_page);  // 스왑받은 페이지를 다시 pt에 pfn에 넣어줭
         ku_h_swapspace[get_ku_pte_swap_offset(pt)] =
             0;  // 스왑스페이스에서 가져왔다고 표시해줌
                 // 꺼내온것만 표시해주면 되고 나머지는 필요없을듯.
+        set_ku_pte_pfn(
+            pt,
+            pfn_of_page);  // 스왑받은 페이지를 다시 pt에 pfn에 넣어줭
+        ku_h_memory[pfn_of_page*4].data = pfn_of_pt*4+offset_pt; // pt를 새롭게 찾을 방법이 필요함. 실제 pt의 페이지*4+그 pt page안에서의 offset을 넣어놓으면 거기로 직접 접근 가능
       }
     } else {
       // 매핑된 페이지에 내용은 중요하지 않은 값.
@@ -267,24 +273,20 @@ int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
 }
 
 void show_page(){
-  printf("PFN\t  [00]   [01]   [10]   [11] \n");
+  printf("PFN\tswapable  [00]   [01]   [10]   [11] \n");
   for(int i=0;i<ku_h_mem_size;i++){
     if(i%4 == 0){
-      printf("PFN %d\t", i/4);
+      printf("PFN %d\t%d\t", i/4, ku_h_memory_swapable[i/4]);
     }
-    if(get_ku_pte_present(ku_h_memory+i) == 0){
-      if(ku_h_memory[i].data == 0)
-        printf("%6d ", 0);
-      else{
-      printf("data %d\n", ku_h_memory[i].data);
-        printf("sw%4d ", get_ku_pte_swap_offset(ku_h_memory+i));
-
-      }
-    } else {
       printf("%6d ", get_ku_pte_pfn(ku_h_memory+i));
-    }
     if(i%4==3)
      printf("\n");
   }
   printf("---------------------------------\n");
+}
+
+void show_swap(){
+  for(int i=1;i<ku_h_swap_count;i++){
+    printf("SFN %d : %d\n", i, ku_h_swapspace[i]);
+  }
 }
