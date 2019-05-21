@@ -212,7 +212,6 @@ int ku_page_fault(char pid, char va) {
     if (present_of_page == 0) {
       pfn_of_page = get_page(0);  // 페이지 얻어와본다. 근데 이 페이지 주인은 어케아노 시발련ㄴ아? 페이지 주인은 ku_h_memory[pfn_of_page].pdb에 들어있다링
       
-      printf("띠용 스왑가져와 %d\n", pfn_of_page);
       if (pfn_of_page == -1) {
         return -1;
       } else {
