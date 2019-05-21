@@ -29,6 +29,7 @@ void print_page() {
 
 void set_ku_pte(struct ku_pte* pte, char a, char b) {
   pte->data = a | b;
+  printf("a | b %d, %d\n", a | b, pte->data);
 }
 
 void set_ku_pte_pfn(struct ku_pte* pte, char pfn) {
@@ -37,6 +38,7 @@ void set_ku_pte_pfn(struct ku_pte* pte, char pfn) {
 
 void set_ku_pte_swap_offset(struct ku_pte* pte, char swap_offset) {
   set_ku_pte(pte, swap_offset << 1, 0);  // 스왑에는 present 0,
+  printf("set 결과 %d\n", pte->data);
 }
 
 unsigned char get_ku_pte_pfn(struct ku_pte* pte) {
@@ -86,7 +88,6 @@ int get_page(char swappable) {
       ku_h_memory_swapable[pfn] =
           (swappable == -1) ? swappable
                             : ku_h_page_index++;  // 새로 할당해준것임.
-
       set_ku_pte_swap_offset(ku_h_memory+ku_h_memory[pfn*4].data, ku_h_swap_index++); // 스왑해준다(pfn*4에 pt가 들어있으니까 일단 포인터 이용하고나서 초기화시켜야함)
       ku_h_memory[pfn*4].data = 0;
       ku_h_memory[pfn*4+1].data = 0;
@@ -272,7 +273,13 @@ void show_page(){
       printf("PFN %d\t", i/4);
     }
     if(get_ku_pte_present(ku_h_memory+i) == 0){
-        printf("s%5d ", get_ku_pte_swap_offset(ku_h_memory+i));
+      if(ku_h_memory[i].data == 0)
+        printf("%6d ", 0);
+      else{
+      printf("data %d\n", ku_h_memory[i].data);
+        printf("sw%4d ", get_ku_pte_swap_offset(ku_h_memory+i));
+
+      }
     } else {
       printf("%6d ", get_ku_pte_pfn(ku_h_memory+i));
     }
