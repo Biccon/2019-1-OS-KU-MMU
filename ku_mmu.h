@@ -234,22 +234,3 @@ int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
   *ku_cr3 = (struct ku_pte*)(ku_h_memory+process->pcb->pdba); 
   return 0;
 }
-
-void show_page(){
-  printf("PFN\tswapable  [00]   [01]   [10]   [11] \n");
-  for(int i=0;i<ku_h_mem_size;i++){
-    if(i%4 == 0){
-      printf("PFN %d\t%d\t", i/4, ku_h_memory_swapable[i/4]);
-    }
-      printf("%6d ", get_ku_pte_pfn(ku_h_memory+i));
-    if(i%4==3)
-     printf("\n");
-  }
-  printf("---------------------------------\n");
-}
-
-void show_swap(){
-  for(int i=1;i<ku_h_swap_count;i++){
-    printf("SFN %d : %d\n", i, ku_h_swapspace[i]);
-  }
-}
