@@ -1,26 +1,22 @@
 struct ku_pte {
   unsigned char data;
 };
-
 typedef struct ku_h_pcb
 {
     char pid;             // process pid
     int pdba; // page directory base address -> offset
 } ku_h_pcb;
-
 typedef struct ku_h_node
 {
     ku_h_pcb *pcb;
     struct ku_h_node *prev;
     struct ku_h_node *next;
 } ku_h_node;
-
 typedef struct ku_h_linkedlist
 {
     ku_h_node *header;
     ku_h_node *tailer;
 } ku_h_linkedlist;
-
 /* Global Variables */
 struct ku_pte* ku_h_memory;
 int* ku_h_memory_swapable;
@@ -34,7 +30,6 @@ unsigned int ku_h_page_count;
 unsigned int ku_h_swap_count;
 unsigned int ku_h_page_index = 1;
 unsigned int ku_h_swap_index = 1;
-
 /* LinkedList Functions */
 ku_h_pcb *ku_h_make_pcb(char pid)
 {
@@ -43,7 +38,6 @@ ku_h_pcb *ku_h_make_pcb(char pid)
     new_pcb->pdba = 0;
     return new_pcb;
 }
-
 ku_h_node *ku_h_add_before(ku_h_node *node, char pid)
 {
     ku_h_node *new_node = (ku_h_node *)malloc(sizeof(ku_h_node));
@@ -55,12 +49,10 @@ ku_h_node *ku_h_add_before(ku_h_node *node, char pid)
     node->prev = new_node;
     return new_node;
 }
-
 ku_h_node *ku_h_add_last(ku_h_linkedlist *list, char pid)
 {
     return ku_h_add_before(list->tailer, pid);
 }
-
 ku_h_node *ku_h_get_node_by_index(ku_h_linkedlist *list, int index)
 {
     ku_h_node *temp = list->header->next;
@@ -70,7 +62,6 @@ ku_h_node *ku_h_get_node_by_index(ku_h_linkedlist *list, int index)
     }
     return temp;
 }
-
 ku_h_node *ku_h_get_node_by_pid(ku_h_linkedlist *list, char pid)
 {
     ku_h_node *temp = list->header->next;
@@ -82,7 +73,6 @@ ku_h_node *ku_h_get_node_by_pid(ku_h_linkedlist *list, char pid)
     }
     return NULL;
 }
-
 void ku_h_init_list(ku_h_linkedlist *list)
 {
     list->header = (ku_h_node *)malloc(sizeof(ku_h_node));
@@ -98,28 +88,21 @@ void ku_h_init_list(ku_h_linkedlist *list)
 void set_ku_pte(struct ku_pte* pte, char a, char b) {
   pte->data = a | b;
 }
-
 void set_ku_pte_pfn(struct ku_pte* pte, char pfn) {
   set_ku_pte(pte, pfn << 2, 1);
 }
-
-void set_ku_pte_swap_offset(struct ku_pte* pte, char swap_offset) {
+void ku_h_set_ku_pte_swap_offset(struct ku_pte* pte, char swap_offset) {
   set_ku_pte(pte, swap_offset << 1, 0);
 }
-
-unsigned char get_ku_pte_pfn(struct ku_pte* pte) {
+unsigned char ku_h_get_ku_pte_pfn(struct ku_pte* pte) {
   return (pte->data) >> 2;
 }
-
-unsigned char get_ku_pte_swap_offset(struct ku_pte* pte) {
+unsigned char ku_h_get_ku_pte_swap_offset(struct ku_pte* pte) {
   return (pte->data) >> 1;
 }
-
-unsigned char get_ku_pte_present(struct ku_pte* pte) { return pte->data & 0x1; }
-
-
+unsigned char ku_h_get_ku_pte_present(struct ku_pte* pte) { return pte->data & 0x1; }
 /* Getting page Functions */
-int get_count(int data) {
+int ku_h_get_count(int data) {
   int count = 0;
   for (int i = 0; i < ku_h_page_count; i++) {
     if (ku_h_memory_swapable[i] == data) count++;
@@ -127,7 +110,7 @@ int get_count(int data) {
   return count;
 }
 
-int get_firstin_page() {
+int ku_h_get_firstin_page() {
   int min = __INT_MAX__;
   int min_index = -1;
   for (int i = 0; i < ku_h_page_count; i++) {
@@ -139,14 +122,13 @@ int get_firstin_page() {
   }
   return min_index;
 }
-
-int get_page(char swappable) {
+int ku_h_get_page(char swappable) {
   int pfn = -1;
-  if (get_count(0) == 0) 
+  if (ku_h_get_count(0) == 0) 
   {
-    if (get_count(-1) != ku_h_page_count) 
+    if (ku_h_get_count(-1) != ku_h_page_count) 
     {
-      pfn = get_firstin_page();
+      pfn = ku_h_get_firstin_page();
       ku_h_memory_swapable[pfn] =
           (swappable == -1) ? swappable
                             : ku_h_page_index++;
@@ -158,14 +140,17 @@ int get_page(char swappable) {
           break;
         }
       }
+      if(sfn == 0) return -1; // 스왑space에 공간이 없으면 -1리턴
+      
       int temp_index_of_pt = ku_h_memory[pfn*4].data;
-      set_ku_pte_swap_offset(ku_h_memory+temp_index_of_pt, sfn);
+      ku_h_set_ku_pte_swap_offset(ku_h_memory+temp_index_of_pt, sfn);
       ku_h_memory[pfn*4].data = 0;
       ku_h_memory[pfn*4+1].data = 0;
       ku_h_memory[pfn*4+2].data = 0;
       ku_h_memory[pfn*4+3].data = 0;
-    } else {
+    } else { // 스왑out할 페이지가 없으면 -1
       //printf("cannot swap anymore\n");
+      return -1;
     }
   } else {
     for (int i = 0; i < ku_h_page_count; i++) {
@@ -177,10 +162,8 @@ int get_page(char swappable) {
       }
     }
   }
-
   return pfn;
 }
-
 int ku_page_fault(char pid, char va) {
   ku_h_node* process = ku_h_get_node_by_pid(ku_h_processes, pid);
   ku_h_pcb* pcb = process->pcb;
@@ -193,7 +176,7 @@ int ku_page_fault(char pid, char va) {
 
   int pfn_of_pmd = -1; 
   if (pd->data == 0) {  
-    pfn_of_pmd = get_page(-1); 
+    pfn_of_pmd = ku_h_get_page(-1); 
     if (pfn_of_pmd == -1) {
       return -1;
     } else {
@@ -207,18 +190,18 @@ int ku_page_fault(char pid, char va) {
       ku_h_memory[pfn_of_pmd*4+3].data = 0;
     }
   } else {
-    char present_of_pd = get_ku_pte_present(pd);
+    char present_of_pd = ku_h_get_ku_pte_present(pd);
     if (present_of_pd == 0) {
       // page directory는 스왑되지 않으므로 공백
     } else {
-      pfn_of_pmd = get_ku_pte_pfn(pd);
+      pfn_of_pmd = ku_h_get_ku_pte_pfn(pd);
     }
   }
 
   struct ku_pte* pmd = (ku_h_memory + pfn_of_pmd*4) + offset_pmd;
   int pfn_of_pt = -1;
   if (pmd->data == 0) {
-    pfn_of_pt = get_page(-1);
+    pfn_of_pt = ku_h_get_page(-1);
     if (pfn_of_pt == -1) {
       return -1;
     } else {
@@ -230,18 +213,18 @@ int ku_page_fault(char pid, char va) {
       ku_h_memory[pfn_of_pt*4+3].data = 0;
     }
   } else {
-    char present_of_pmd = get_ku_pte_present(pmd);
+    char present_of_pmd = ku_h_get_ku_pte_present(pmd);
     if (present_of_pmd == 0) {
       // pmd 스왑 안되므로 공백
     } else {
-      pfn_of_pt = get_ku_pte_pfn(pmd);
+      pfn_of_pt = ku_h_get_ku_pte_pfn(pmd);
     }
   }
 
   struct ku_pte* pt = (ku_h_memory + pfn_of_pt*4) + offset_pt;
   int pfn_of_page = -1;
   if (pt->data == 0) { 
-    pfn_of_page = get_page(0);
+    pfn_of_page = ku_h_get_page(0);
     if (pfn_of_page == -1) {
       return -1; 
     } else {
@@ -252,13 +235,13 @@ int ku_page_fault(char pid, char va) {
       ku_h_memory[pfn_of_page*4+3].data = 0;
     }
   } else {
-    char present_of_page = get_ku_pte_present(pt); 
+    char present_of_page = ku_h_get_ku_pte_present(pt); 
     if (present_of_page == 0) {
-      pfn_of_page = get_page(0);
+      pfn_of_page = ku_h_get_page(0);
       if (pfn_of_page == -1) {
         return -1;
       } else {
-        ku_h_swapspace[get_ku_pte_swap_offset(pt)] = 0;
+        ku_h_swapspace[ku_h_get_ku_pte_swap_offset(pt)] = 0;
         set_ku_pte_pfn(
             pt,
             pfn_of_page);  
@@ -292,7 +275,7 @@ void* ku_mmu_init(unsigned int mem_size, unsigned int swap_size) {
 int ku_run_proc(char pid, struct ku_pte** ku_cr3) {
   ku_h_node* process = ku_h_get_node_by_pid(ku_h_processes, pid);
   if (process == NULL) {
-    int pfn_for_pd = get_page(
+    int pfn_for_pd = ku_h_get_page(
         -1); 
     if (pfn_for_pd == -1) {
       return -1;
