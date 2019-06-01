@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "./ku_trav.h"
 #include "./ku_mmu.h"
 
 int ku_traverse(void *, char, void *);
